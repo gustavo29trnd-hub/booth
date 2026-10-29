@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>70mai Booth 5.5 × 5.5 m (mascot floor plan)</title>
+<style>
+:root{--bg:#e6e2da;--fg:#222;--chip:rgba(255,255,255,.88);--ac:#EE9B26;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2927;--fg:#f1efe9;--chip:rgba(30,30,30,.88)}}
+:root[data-theme="dark"]{--bg:#2a2927;--fg:#f1efe9;--chip:rgba(30,30,30,.88)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Helvetica Neue",Arial,sans-serif;overflow:hidden}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#ui{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{background:var(--chip);color:var(--fg);border:1px solid var(--ac);border-radius:8px;padding:8px 12px;font:600 14px inherit;cursor:pointer}
+#cap{background:var(--chip);border-radius:8px;padding:8px 12px;font-size:13px}
+.pin,.tag{position:fixed;transform:translate(-50%,-50%);pointer-events:none;font-weight:700;color:#222}
+.pin{width:26px;height:26px;border-radius:50%;background:#fff;border:2.5px solid #222;display:flex;align-items:center;justify-content:center;font-size:13px}
+.tag{background:#EE9B26;border:2px solid #8a5a10;border-radius:6px;padding:3px 8px;font-size:11px;color:#5a2d00;text-transform:uppercase;white-space:nowrap}
+#leg{position:fixed;left:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);background:var(--chip);border-radius:8px;padding:8px 12px;font-size:12px;max-width:min(380px,calc(100% - 20px))}
+#leg summary{cursor:pointer;font-weight:700}
+#leg ol{margin:6px 0 0;padding-left:20px;line-height:1.5}
+#tb{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);display:none;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center}#tb span{background:var(--chip);border-radius:8px;padding:8px 12px;font-size:13px}button.on{background:var(--ac);color:#222}
+#mp{position:fixed;right:10px;top:50%;transform:translateY(-50%);width:min(230px,52vw);max-height:60vh;overflow:auto;background:var(--chip);border:1px solid var(--ac);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.4;z-index:5}
+#mh{display:flex;justify-content:space-between;align-items:center;gap:8px}#mh b{font-size:13px}#mh button{padding:0 8px;font-size:16px;line-height:24px}
+#ms{font-weight:700;margin:6px 0 4px}#md{margin:0;padding-left:16px}
+</style></head><body>
+<div id="ui"><button id="b1">Eye level (front)</button><button id="b2">High angle</button><button id="be">Edit layout</button><button id="zi">Zoom +</button><button id="zo">Zoom -</button><button id="bm" class="on">Measurements</button><button id="bq" class="on">30 sqm box</button><span id="cap">Drag to orbit 360°. Scroll, pinch or use Zoom to zoom. Tap Edit layout to move, rotate and resize items. Tap an object to see its real-world size. Not a photorealistic render.</span></div>
+
+<div id="tb"><span id="sn">Tap an item to select</span><button id="rl">Rotate left</button><button id="rr">Rotate right</button><button id="sm">Smaller</button><button id="sp">Bigger</button><button id="dl">Delete</button><button id="sd">Save as default</button><button id="rs">Reset layout</button><button id="fr">Original layout</button><button id="ex">Export / import</button></div>
+<div id="xp" style="display:none;position:fixed;left:10px;right:10px;top:60px;z-index:9;background:var(--chip);border:1px solid var(--ac);border-radius:8px;padding:10px"><textarea id="xt" style="width:100%;height:120px;font:12px monospace"></textarea><div style="margin-top:6px;display:flex;gap:6px"><button id="xa">Apply</button><button id="xc">Copy</button><button id="xx">Close</button></div><div style="font-size:12px;margin-top:6px">Copy this text to save your layout, or paste a saved layout here and press Apply.</div></div>
+<aside id="mp" style="display:none"><div id="mh"><b id="mt"></b><button id="mx" title="Close" aria-label="Close">×</button></div><div id="ms"></div><ul id="md"></ul></aside>
+<details id="leg" open><summary>Client floor plan (5.5 × 5.5 m)</summary><ol><li>01 Driving cabin · 02 Education counter</li><li>03 Media island: display wall with 4-camera screen, neon 4K+4K sign, perforated 4K+4K column, brown base cabinet with scan &amp; shop QR, 70mai panel at the rear</li><li>04 Mascot standee · 05 A900 (gold plinths) · 06 Other flagship dash cams · 07 Other standard dash cams</li><li>Flyers in acrylic holders on the education counter</li><li>Proposed TV stand in the empty pocket behind the media island</li><li>Display desks 05–07: rounded brown desks with cream tops (as before), now carrying 4 stepped plinths with arched headers each (gold on the A900 desk)</li></ol></details>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const T=THREE,scene=new T.Scene();scene.background=new T.Color(0xe6e2da);
+const ren=new T.WebGLRenderer({antialias:true});ren.shadowMap.enabled=true;ren.setPixelRatio(Math.min(devicePixelRatio,2));document.body.prepend(ren.domElement);
+const cam=new T.PerspectiveCamera(48,1,.1,100);
+scene.add(new T.HemisphereLight(0xffffff,0xb8b4aa,.95));
+const sun=new T.DirectionalLight(0xffffff,.65);sun.position.set(4,9,7);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:1,far:30});scene.add(sun);
+const mat=(c,o)=>new T.MeshStandardMaterial(Object.assign({color:c,roughness:.7},o));
+function box(w,h,d,c,x,y,z,p){const m=new T.Mesh(new T.BoxGeometry(w,h,d),Array.isArray(c)?c:mat(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;(p||scene).add(m);return m}
+function tex(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');fn(g,w,h);const t=new T.CanvasTexture(c);t.anisotropy=8;return t}
+function plane(w,h,t,x,y,z,ry,rx){const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:t,transparent:true}));m.position.set(x,y,z);m.rotation.set(rx||0,ry||0,0);scene.add(m);return m}
+const ORG=0xEE9B26;
+let cur=null;const items={};const _add=scene.add.bind(scene);scene.add=function(o){if(cur){(items[cur]=items[cur]||[]).push(o)}return _add(o)};
+const fl=new T.Mesh(new T.PlaneGeometry(16,16),mat(0xe3ded3,{roughness:.6}));fl.rotation.x=-Math.PI/2;fl.receiveShadow=true;scene.add(fl);
+const mk=(c,o)=>{const m=mat(c,o);return[m,m,m,m,m,m]},WA=mk(0xf6f6f4,{roughness:.2}),GA=mk(0xd4af37,{metalness:.4,roughness:.3,emissive:0x4a3800}),BA=mk(0x141414),LA=mk(0xEE9B26,{emissive:0xEE9B26}),LG=mk(0xffe3a0,{emissive:0xffd36b});
+const D=Math.PI/180,P=(r,a)=>[r*Math.sin(a*D),r*Math.cos(a*D)];
+function place(n,x,z,ry){const og=new T.Group();_add(og);og.updateMatrixWorld(true);items[n].forEach(o=>og.attach(o));items[n]=[og];og.position.set(x,0,z);og.rotation.y=ry}
+const cyl=(r,h,y,m)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,72),m);o.position.y=y;o.castShadow=o.receiveShadow=true;scene.add(o)};
+function person(x,y,z,shirt,ry,seated,par){const g=new T.Group(),skin=0xd2a88a;
+if(seated){box(.3,.14,.5,0x222222,0,.08,.25,g);box(.14,.45,.14,0x222222,0,-.15,.5,g);box(.38,.6,.22,shirt,0,.5,0,g);box(.09,.09,.45,shirt,.22,.45,.25,g);box(.09,.09,.45,shirt,-.22,.45,.25,g);const h=new T.Mesh(new T.SphereGeometry(.11,16,12),mat(skin));h.position.y=.95;g.add(h)}
+else{box(.34,.8,.2,0x222222,0,.4,0,g);box(.38,.6,.22,shirt,0,1.1,0,g);box(.09,.5,.09,shirt,.24,1.1,0,g);box(.09,.5,.09,shirt,-.24,1.1,0,g);const h=new T.Mesh(new T.SphereGeometry(.11,16,12),mat(skin));h.position.y=1.55;g.add(h)}
+g.position.set(x,y,z);g.rotation.y=ry||0;g.traverse(o=>{o.castShadow=true});(par||scene).add(g)}
+const wrap=(g,t,x,y,mw,lh)=>{let l='';t.split(' ').forEach(w=>{const n=l?l+' '+w:w;if(g.measureText(n).width>mw&&l){g.fillText(l,x,y);y+=lh;l=w}else l=n});g.fillText(l,x,y);return y+lh};
+const ptex=(q,pts,foot)=>tex(340,520,(g,w,h)=>{g.fillStyle='#161616';g.fillRect(0,0,w,h);g.fillStyle='#EE9B26';g.fillRect(0,0,w,10);g.textAlign='center';g.font='bold 26px Arial';g.fillText('70mai',w/2,56);g.fillStyle='#fff';g.font='bold 34px Arial';let y=wrap(g,q,w/2,115,300,42);g.font='22px Arial';g.fillStyle='#ddd';y+=20;pts.forEach(p=>{y=wrap(g,p,w/2,y,290,28)+12});g.fillStyle='#EE9B26';g.font='bold 19px Arial';g.fillText(foot,w/2,h-24)});
+const qr=tex(256,300,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);g.fillStyle='#111';let sd=7;const rn=()=>(sd=(sd*9301+49297)%233280)/233280,c=10.5;for(let i=0;i<21;i++)for(let j=0;j<21;j++){const fi=(i<7||i>13)&&(j<7||j>13)&&!(i>13&&j>13);let on;if(fi){const a=i>13?i-14:i,b=j>13?j-14:j;on=a==0||a==6||b==0||b==6||(a>1&&a<5&&b>1&&b<5)}else on=rn()>.5;if(on)g.fillRect(14+j*c,14+i*c,c,c)}g.textAlign='center';g.font='bold 22px Arial';g.fillText('SCAN TO PAY',128,272)});
+const qr2=tex(256,300,(g,w,h)=>{g.fillStyle='#fff';g.fillRect(0,0,w,h);g.fillStyle='#111';let sd=7;const rn=()=>(sd=(sd*9301+49297)%233280)/233280,c=10.5;for(let i=0;i<21;i++)for(let j=0;j<21;j++){const fi=(i<7||i>13)&&(j<7||j>13)&&!(i>13&&j>13);let on;if(fi){const a=i>13?i-14:i,b=j>13?j-14:j;on=a==0||a==6||b==0||b==6||(a>1&&a<5&&b>1&&b<5)}else on=rn()>.5;if(on)g.fillRect(14+j*c,14+i*c,c,c)}g.textAlign='center';g.font='bold 22px Arial';g.fillText('SCAN TO SHOP',128,272)});
+
+const H=.02,FR=mk(0x35322f,{roughness:.45}),CB=mk(0x3e4043,{roughness:.5}),CH=mk(0xc9b08a,{metalness:.3,roughness:.4}),CR=mk(0xcfb48c,{roughness:.35}),BZ=mk(0x9c7b4a,{metalness:.3,roughness:.4}),BL=mk(0x8fd0f0,{emissive:0x6bbce6}),AM=mk(0xf5a23a,{emissive:0xf5a23a});box(5.5,.02,5.5,0xbdb6aa,0,.01,0);[[0,-2.71,5.5,.12],[0,2.71,5.5,.12],[-2.71,0,.12,5.5],[2.71,0,.12,5.5]].forEach(a=>box(a[2],.04,a[3],0x3a3633,a[0],.02,a[1]));
+const lg=tex(1024,128,g=>{g.fillStyle='#fff';g.font='bold 112px Arial';g.textAlign='left';g.fillText('70mai',24,106);g.fillStyle='#e8e4dc';g.textAlign='right';g.font='70px Arial';g.fillText('A900 Series',1000,98)});
+const edu=tex(640,360,(g,w,h)=>{g.fillStyle='#161616';g.fillRect(0,0,w,h);g.fillStyle='#EE9B26';g.fillRect(0,0,w,10);g.fillStyle='#fff';g.textAlign='center';g.font='bold 34px Arial';g.fillText('Why choose a 4K dash cam?',w/2,80);g.fillStyle='#ccc';g.font='24px Arial';g.fillText('Clearer plates, signs and faces',w/2,125);g.fillStyle='#fff';g.font='bold 34px Arial';g.fillText('Why does rear recording matter?',w/2,215);g.fillStyle='#ccc';g.font='24px Arial';g.fillText('Complete proof from the rear',w/2,260)});
+const bp=tex(550,900,(g,w,h)=>{g.fillStyle='#2b2927';g.fillRect(0,0,w,h);g.fillStyle='#fff';g.textAlign='center';g.font='bold 150px Arial';g.fillText('70mai',w/2,300);g.fillStyle='#EE9B26';g.fillRect(w/2-70,330,140,10);g.fillStyle='#fff';g.font='bold 36px Arial';g.fillText('Triple View.',w/2,440);g.fillText('Dual 4K.',w/2,490);g.fillText('Full Story.',w/2,540);g.fillStyle='#bbb';g.font='bold 24px Arial';g.fillText('SAFEGUARD YOUR EVERY TRIP',w/2,820)});
+const lab=(t,w)=>tex(w||640,80,g=>{g.fillStyle='#111';g.fillRect(0,0,g.canvas.width,80);g.fillStyle='#fff';g.textAlign='center';g.font='bold 36px Arial';g.fillText(t,g.canvas.width/2,56)});
+const logoT=tex(512,160,g=>{g.fillStyle='#fff';g.textAlign='center';g.font='bold 120px Arial';g.fillText('70mai',256,120)});
+const hdr=(a,b,au,w,h)=>tex(w,h,g=>{const gr=g.createLinearGradient(0,0,w,h);gr.addColorStop(0,'#2b2927');gr.addColorStop(1,au?'#8a6a1f':'#7a4a14');g.fillStyle=gr;g.fillRect(0,0,w,h);g.fillStyle=au?'#f0d27a':'#fff';g.textAlign='center';g.font='bold '+Math.round(h*.3)+'px Arial';g.fillText(a,w/2,h*.46);g.fillStyle='#e8e4dc';g.font=Math.round(h*.13)+'px Arial';g.fillText(b,w/2,h*.74)});
+const arch=(x,y,z)=>{const m=new T.Mesh(new T.TorusGeometry(.13,.012,8,28,Math.PI),mat(0x111111));m.position.set(x,y,z);scene.add(m)};
+function rrFill(p,w,d,r){const a=w/2,b=d/2,P=Math.PI;p.moveTo(-a+r,-b);p.lineTo(a-r,-b);p.absarc(a-r,-b+r,r,-P/2,0,false);p.lineTo(a,b-r);p.absarc(a-r,b-r,r,0,P/2,false);p.lineTo(-a+r,b);p.absarc(-a+r,b-r,r,P/2,P,false);p.lineTo(-a,-b+r);p.absarc(-a+r,-b+r,r,P,P*1.5,false)}
+function rrShape(w,d,r,t){const s=new T.Shape();rrFill(s,w,d,r);if(t){const h=new T.Path();rrFill(h,w-2*t,d-2*t,Math.max(r-t,.03));s.holes.push(h)}return s}
+function rbox(w,h,d,r,c,x,y,z,p,t){const g=new T.ExtrudeGeometry(rrShape(w,d,r,t),{depth:h,bevelEnabled:false,curveSegments:14});g.rotateX(-Math.PI/2);g.translate(0,-h/2,0);const m=new T.Mesh(g,Array.isArray(c)?c:mat(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;(p||scene).add(m);return m}
+const BRN=mk(0x5c4333,{roughness:.55}),TOPM=mk(0xe9ddc6,{roughness:.35});
+const flt=(q,s,big)=>tex(340,480,(g,w,h)=>{const bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#1d1b19');bg.addColorStop(1,'#3a2a18');g.fillStyle=bg;g.fillRect(0,0,w,h);g.fillStyle='#EE9B26';g.fillRect(0,0,w,12);g.fillRect(0,h-12,w,12);g.fillStyle='#fff';g.textAlign='center';g.font='bold 40px Arial';g.fillText('70mai',w/2,66);g.fillStyle='rgba(238,155,38,.95)';g.font='bold '+(big.length>2?84:120)+'px Arial';g.fillText(big,w/2,200);g.fillStyle='#fff';g.font='bold 30px Arial';let y=wrap(g,q,w/2,252,300,36);g.fillStyle='#ddd';g.font='21px Arial';wrap(g,s,w/2,y+14,290,27)});
+function flyer(x,z,q,s,big){box(.15,.012,.1,0xcfe3ea,x,1.006,z);box(.15,.05,.008,0xcfe3ea,x,1.03,z-.046);plane(.13,.184,flt(q,s,big),x,1.1,z-.03,0,-.14)}
+const lg2=tex(2100,250,g=>{g.fillStyle='#fff';g.font='bold 170px Arial';g.textAlign='left';g.fillText('70mai',60,185);g.fillStyle='#cfcac0';g.textAlign='right';g.font='115px Arial';g.fillText('A900 Series',2040,170)});
+cur='Overhead frame';[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(q=>box(.12,2.88,.12,FR,q[0]*2.5,1.56,q[1]*2.5));
+rbox(5.3,.5,5.3,.24,0x3a322d,0,3.25,0,undefined,.2);
+box(4.7,.02,.06,LG,0,2.98,2.55);box(4.7,.02,.06,LG,0,2.98,-2.55);box(.06,.02,4.7,LG,2.55,2.98,0);box(.06,.02,4.7,LG,-2.55,2.98,0);
+plane(4.2,.5,lg2,0,3.25,2.652,0);plane(4.2,.5,lg2,0,3.25,-2.652,Math.PI);plane(4.2,.5,lg2,-2.652,3.25,0,-Math.PI/2);plane(4.2,.5,lg2,2.652,3.25,0,Math.PI/2);cur=null;
+cur='Driving cabin';{const GL=mat(0x9fd0e8,{transparent:true,opacity:.3,roughness:.1}),GLA=[GL,GL,GL,GL,GL,GL],DK=0x1f1f21,LT=0x2a2a2d,CM=0xe6dac2;
+box(1.6,.08,1.7,0x2b2b2d,0,.16,0);box(1.62,.015,1.72,LA,0,.13,0);box(1.44,.02,1.54,0x1c1c1e,0,.21,0);
+[-1,1].forEach(s=>{box(.08,.42,1.3,CM,s*.76,.41,.05);box(.09,.03,1.32,DK,s*.76,.635,.05)});
+box(1.6,.42,.3,CM,0,.41,-.7);box(1.6,.03,.32,DK,0,.635,-.7);
+box(1.44,.2,.45,DK,0,.7,-.5);box(.5,.12,.3,0x161618,-.37,.84,-.5);box(.28,.17,.03,0x0b1b2a,0,.86,-.27);
+const sw=new T.Mesh(new T.TorusGeometry(.17,.022,10,28),mat(0x111111));sw.position.set(-.37,.95,-.18);sw.rotation.x=-.4;sw.castShadow=true;scene.add(sw);box(.05,.05,.32,DK,-.37,.8,-.3).rotation.x=-.5;
+box(1.46,.85,.02,GLA,0,1.1,-.76).rotation.x=.25;[-1,1].forEach(s=>box(.07,.95,.07,DK,s*.77,1.1,-.76).rotation.x=.25);box(1.62,.08,.1,DK,0,1.57,-.66);
+box(.14,.06,.07,0x111111,0,1.47,-.6);box(.04,.04,.03,ORG,0,1.47,-.65);box(.2,.06,.03,0x111111,0,1.4,-.62);
+[-.37,.37].forEach(x=>{box(.5,.14,.5,LT,x,.3,.2);box(.5,.6,.12,LT,x,.66,.45).rotation.x=.12;box(.28,.2,.1,LT,x,1.04,.47)});
+box(.2,.3,.7,0x1c1c1e,0,.36,.05);box(.05,.14,.05,0x333333,0,.58,-.1)}cur=null;place('Driving cabin',-1.59,-1.36,0);
+cur='Education counter';rbox(1.52,.02,.62,.28,BL,0,.13,0);rbox(1.5,.8,.6,.28,BRN,0,.54,0);rbox(1.58,.03,.68,.32,BZ,0,.945,0);rbox(1.56,.04,.66,.31,TOPM,0,.98,0);
+box(.04,.18,.04,0x333333,-.45,1.09,-.1);box(.56,.34,.03,0x050505,-.45,1.28,-.12);plane(.52,.3,edu,-.45,1.28,-.103,0);
+box(.1,.07,.07,0x111111,.55,1.02,.05);box(.03,.03,.03,ORG,.55,1.02,.09);plane(.62,.19,logoT,0,.54,.302,0);flyer(-.12,.08,'Why choose a 4K dash cam?','Clearer plates, signs and faces','4K');flyer(.1,.08,'Why does rear recording matter?','Complete proof from the rear','REAR');box(.14,.03,.2,0xf2f2f0,.33,1.015,.1);box(.14,.012,.2,0xdddddd,.34,1.037,.1);cur=null;place('Education counter',1.71,-1.89,0);
+const WALL=mat(0xdccaa7,{roughness:.55}),COL=mat(0xb9a07a,{roughness:.5}),LEDGE=mat(0xd8c19b,{roughness:.4}),CAB=mat(0x4a372b,{roughness:.5});
+const neon=tex(512,176,(g,w,h)=>{const r=26;g.fillStyle='#2a211b';g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,h,r);g.arcTo(w,h,0,h,r);g.arcTo(0,h,0,0,r);g.arcTo(0,0,w,0,r);g.closePath();g.fill();g.textAlign='center';g.textBaseline='middle';g.font='bold 118px Arial';g.shadowColor='#ffe7a6';g.shadowBlur=22;g.lineWidth=4;g.strokeStyle='#fff3cf';g.strokeText('4K+4K',w/2,h/2+4);g.shadowBlur=0});
+const cams4=tex(640,360,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);const nm=['FRONT','REAR','LEFT','RIGHT'];nm.forEach((t,i)=>{const x=(i%2)*w/2,y=Math.floor(i/2)*h/2,ww=w/2-4,hh=h/2-4;const sk=g.createLinearGradient(0,y,0,y+hh);sk.addColorStop(0,i%2?'#d9a679':'#8fbfe6');sk.addColorStop(.52,i%2?'#f0cfa6':'#dcebf4');sk.addColorStop(.52,'#505053');sk.addColorStop(1,'#2a2a2c');g.fillStyle=sk;g.fillRect(x+2,y+2,ww,hh);g.fillStyle='rgba(255,255,255,.75)';g.fillRect(x+2+ww*.49,y+2+hh*.6,ww*.02,hh*.1);g.fillRect(x+2+ww*.49,y+2+hh*.8,ww*.02,hh*.12);g.fillStyle='#1c1c1e';g.fillRect(x+2+ww*.4,y+2+hh*.5,ww*.2,hh*.14);g.fillStyle='#fff';g.font='bold 16px Arial';g.textAlign='left';g.fillText(t,x+12,y+24)})});
+const k4v=tex(120,1552,(g,w,h)=>{g.fillStyle='#bba37c';g.fillRect(0,0,w,h);g.fillStyle='rgba(70,52,30,.55)';for(let r=0,y=10;y<h;y+=16,r++)for(let x=(r%2?18:10);x<w;x+=16){g.beginPath();g.arc(x,y,3.2,0,6.283);g.fill()}g.save();g.translate(w/2,h*.42);g.rotate(-Math.PI/2);g.textAlign='center';g.textBaseline='middle';g.font='bold 92px Arial';g.shadowColor='#fff';g.shadowBlur=16;g.lineWidth=5;g.strokeStyle='#4a3a22';g.strokeText('4K+4K',0,0);g.fillStyle='#fff';g.fillText('4K+4K',0,0);g.restore()});
+cur='Media island';box(1.2,.1,1.4,0x1a1a1a,0,.17,0);box(1.22,.02,1.42,BL,0,.13,0);
+box(.97,2.3,.2,WALL,.065,1.37,-.56);box(.18,2.3,.22,COL,-.51,1.37,-.55);plane(.17,2.2,k4v,-.51,1.37,-.438,0);box(.05,2.3,.22,0x2b2927,.575,1.37,-.55);box(1.2,.04,.24,0x2b2927,0,2.54,-.55);
+plane(.62,.22,neon,.065,2.2,-.458,0);
+box(.03,.06,.05,0x1a1a1a,.065,1.86,-.435);box(.16,.07,.09,0x111111,.065,1.86,-.39);const lens=new T.Mesh(new T.CylinderGeometry(.026,.026,.03,20),mat(0x050505));lens.rotation.x=Math.PI/2;lens.position.set(.03,1.86,-.33);scene.add(lens);box(.03,.03,.012,ORG,.1,1.86,-.343);
+box(.94,.53,.04,0x050505,.065,1.42,-.44);plane(.9,.49,cams4,.065,1.42,-.419,0);
+box(.97,.02,.5,BL,.065,.23,-.41);box(.95,.74,.48,CAB,.065,.61,-.41);box(.012,.7,.01,0x151515,.065,.61,-.168);box(1,.05,.53,LEDGE,.065,1.005,-.395);
+plane(.35,.109,logoT,-.17,.7,-.168,0);plane(.44,.055,lab('PRODUCT DEMO · SCAN & SHOP'),-.17,.45,-.168,0);plane(.15,.176,qr2,.3,.65,-.168,0);
+box(.14,.06,.1,0x111111,-.15,1.06,-.3);box(.04,.04,.03,ORG,-.15,1.06,-.245);box(.012,.012,.1,0x8a8a8a,-.15,1.032,-.36);box(.05,.012,.05,0x333333,-.15,1.027,-.4);
+plane(1.1,1.8,bp,0,1.45,-.663,Math.PI);cur=null;place('Media island',.04,-.11,0);
+const masc=tex(400,640,(g,w,h)=>{const ell=(x,y,rx,ry)=>()=>{g.beginPath();g.ellipse(x,y,rx,ry,0,0,6.283)},rc=(x,y,a,b)=>()=>{g.beginPath();g.rect(x,y,a,b)};
+const sh=[[ell(150,603,52,26),'#1a1a1c'],[ell(250,603,52,26),'#1a1a1c'],[rc(128,500,44,100),'#1a1a1c'],[rc(228,500,44,100),'#1a1a1c'],[rc(112,320,176,210),'#c8242b'],[rc(278,340,36,150),'#1a1a1c'],[rc(88,340,36,100),'#1a1a1c'],[ell(105,205,40,40),'#1a1a1c'],[ell(295,205,40,40),'#1a1a1c'],[ell(200,235,112,108),'#f4f0e8'],[ell(296,492,24,24),'#fff'],[ell(106,444,24,24),'#fff']];
+g.lineJoin='round';g.lineWidth=18;g.strokeStyle='#fff';sh.forEach(a=>{a[0]();g.stroke()});sh.forEach(a=>{a[0]();g.fillStyle=a[1];g.fill()});
+g.fillStyle='#c8242b';g.beginPath();g.arc(200,235,114,Math.PI*1.02,Math.PI*1.98);g.lineTo(312,198);g.lineTo(88,198);g.closePath();g.fill();g.fillStyle='#1a1a1c';g.fillRect(96,190,208,22);g.fillStyle='#fff';g.fillRect(190,120,20,72);
+g.fillStyle='#111';[[165,255],[235,255]].forEach(p=>{g.beginPath();g.arc(p[0],p[1],15,0,6.283);g.fill()});g.fillStyle='#fff';[[170,249],[240,249]].forEach(p=>{g.beginPath();g.arc(p[0],p[1],5,0,6.283);g.fill()});
+g.fillStyle='#2a1c14';g.beginPath();g.ellipse(200,290,24,17,0,0,6.283);g.fill();g.strokeStyle='#111';g.lineWidth=5;g.beginPath();g.arc(200,298,28,.25*Math.PI,.75*Math.PI);g.stroke();
+g.fillStyle='#e6b422';g.strokeStyle='#b8860b';g.lineWidth=4;g.beginPath();g.moveTo(30,250);g.lineTo(120,250);g.lineTo(105,332);g.lineTo(45,332);g.closePath();g.fill();g.stroke();g.beginPath();g.arc(30,280,24,Math.PI*.5,Math.PI*1.5);g.stroke();g.beginPath();g.arc(120,280,24,-Math.PI*.5,Math.PI*.5);g.stroke();g.fillRect(68,332,14,26);g.fillRect(48,356,54,16);
+g.fillStyle='#111';g.font='bold 22px Arial';g.textAlign='center';g.fillText('TOP 1',75,300)});
+cur='Mascot standee';plane(.8,1.28,masc,0,.82,0,0);plane(.8,1.28,masc,0,.82,-.012,Math.PI);box(.5,.03,.3,0x222222,0,.135,0);box(.04,1,.02,0x333333,0,.62,-.15).rotation.x=.3;cur=null;place('Mascot standee',-2.05,.45,Math.PI/4);
+const pamf=c=>tex(120,168,g=>{g.fillStyle='#fff';g.fillRect(0,0,120,168);g.fillStyle=c;g.fillRect(0,0,120,24);g.fillStyle='#111';g.font='bold 22px Arial';g.textAlign='center';g.fillText('70mai',60,56);g.fillStyle='#bbb';[78,92,106,120].forEach(y=>g.fillRect(16,y,88,5));g.fillStyle='#111';g.font='bold 15px Arial';g.fillText('[PRICE]',60,152)}),pam=pamf('#EE9B26'),pamG=pamf('#d4af37');
+const plt=(t,sp)=>tex(256,80,g=>{g.fillStyle='#fff';g.fillRect(0,0,256,80);g.fillStyle='#111';g.textAlign='center';g.font='bold '+(t.length>7?30:36)+'px Arial';g.fillText(t,128,38);g.fillStyle='#666';g.font='20px Arial';g.fillText(sp,128,66)});
+const albl=t=>tex(256,96,g=>{g.textAlign='center';g.fillStyle='#EE9B26';g.font='bold 24px Arial';g.fillText('70mai',128,30);g.fillStyle='#111';g.font='bold '+(t.length>7?32:46)+'px Arial';g.fillText(t,128,80)});
+const BK=0x0e0e0f,AR=new T.MeshBasicMaterial({color:0x0e0e0f}),AL=new T.MeshBasicMaterial({color:0xf3eee3});
+function archU(x,z,r){const sh=R=>{const q=new T.Shape();q.moveTo(-R,0);q.lineTo(R,0);q.lineTo(R,.2);q.absarc(0,.2,R,0,Math.PI,false);q.lineTo(-R,0);return q};const o=new T.Mesh(new T.ShapeGeometry(sh(r+.015),16),AR),i=new T.Mesh(new T.ShapeGeometry(sh(r),16),AL);o.position.set(x,.96,z);i.position.set(x,.975,z+.003);scene.add(o);scene.add(i)}
+function stn(x,pz,au,name,sp){box(.26,.07,.22,BK,x,.995,pz);box(.2,.05,.16,au?GA:BK,x,1.055,pz-.02);box(.26,.008,.012,au?GA:LA,x,1.036,pz+.11);plane(.22,.065,plt(name,sp),x,.995,pz+.111,0);
+box(.14,.06,.1,0x111111,x,1.11,pz-.02);box(.04,.04,.03,au?GA:LA,x,1.11,pz+.035);box(.01,.01,.1,0x8a8a8a,x,1.11,pz-.12);box(.01,.15,.01,0x8a8a8a,x,1.035,pz-.17);box(.05,.012,.05,0x333333,x,.966,pz-.17);
+archU(x,pz-.19,.14);plane(.24,.09,albl(name),x,1.2,pz-.185,0)}
+function ptab(n,t,au,x,z,name,sp,pg){cur=n;rbox(1.34,.02,.64,.28,BL,0,.13,0);rbox(1.3,.76,.6,.27,BRN,0,.52,0);rbox(1.4,.02,.7,.3,au?GA:BZ,0,.89,0);rbox(1.4,.06,.7,.3,TOPM,0,.93,0);
+plane(.62,.19,logoT,0,.5,.302,0);[-.48,-.16,.16,.48].forEach((sx,k)=>stn(sx,.05,pg,name.replace('#',k+1),sp));cur=null;place(n,x,z,0)}
+ptab('A900 table','05 · A900',0,-1.75,2.08,'A900','Dual 4K',1);ptab('Flagship dash cams table','06 · OTHER FLAGSHIPS',1,1.75,2.08,'FLAGSHIP #','Flagship dash cam',0);
+cur='Standard dash cams table';rbox(1.74,.02,.54,.26,BL,0,.13,0);rbox(1.7,.76,.5,.24,BRN,0,.52,0);rbox(1.8,.02,.6,.29,BZ,0,.89,0);rbox(1.8,.06,.6,.29,TOPM,0,.93,0);plane(.62,.19,logoT,0,.5,.254,0);
+[-.63,-.21,.21,.63].forEach((sx,k)=>stn(sx,.03,0,'STANDARD '+(k+1),'Standard dash cam'));cur=null;place('Standard dash cams table',2.2,.08,-Math.PI/2);
+const tvs=tex(640,360,(g,w,h)=>{const b=g.createLinearGradient(0,0,w,h);b.addColorStop(0,'#14110f');b.addColorStop(1,'#3a2a18');g.fillStyle=b;g.fillRect(0,0,w,h);g.textAlign='center';g.fillStyle='#fff';g.font='bold 54px Arial';g.fillText('70mai',w/2,92);g.fillStyle='#EE9B26';g.font='bold 120px Arial';g.fillText('4K+4K',w/2,226);g.fillStyle='#ddd';g.font='28px Arial';g.fillText('Dual 4K · Night Owl Vision™',w/2,290)});
+cur='TV stand';box(.6,.04,.3,0x151515,0,.14,0);box(.04,1.14,.04,0x2a2a2a,-.22,.73,0);box(.04,1.14,.04,0x2a2a2a,.22,.73,0);box(.98,.57,.04,0x080808,0,1.43,0);plane(.95,.534,tvs,0,1.43,.021,0);cur=null;place('TV stand',.07,-2.45,Math.PI);
+
+// layout editor
+const groups={},home={},ray=new T.Raycaster(),mv=new T.Vector2(),pl0=new T.Plane(new T.Vector3(0,1,0),-H),hit=new T.Vector3(),off=new T.Vector3(),$=id=>document.getElementById(id);
+let sel=null,bh=null,editing=false,gdrag=null;
+Object.keys(items).forEach(k=>{items[k].forEach(o=>o.position.y+=H-.12);const g=new T.Group(),bx=new T.Box3();items[k].forEach(o=>bx.expandByObject(o));const c=bx.getCenter(new T.Vector3());g.position.set(c.x,H,c.z);g.name=k;_add(g);g.updateMatrixWorld(true);items[k].forEach(o=>g.attach(o));groups[k]=g;home[k]={x:g.position.x,z:g.position.z,r:0,s:1}});
+const BAKED={};Object.keys(BAKED).forEach(k=>{const g=groups[k],v=BAKED[k];if(g){g.position.x=v[0];g.position.z=v[1];g.rotation.y=v[2];g.scale.setScalar(v[3]);g.visible=v[4];home[k]={x:v[0],z:v[1],r:v[2],s:v[3]}}});
+function save(){try{const o={};Object.keys(groups).forEach(k=>{const g=groups[k];o[k]=[g.position.x,g.position.z,g.rotation.y,g.scale.x,g.visible]});localStorage.setItem('plan55-layout',JSON.stringify(o))}catch(e){}}
+try{const o=JSON.parse(localStorage.getItem('plan55-layout')||'null');if(o)Object.keys(o).forEach(k=>{const g=groups[k],v=o[k];if(g){g.position.x=v[0];g.position.z=v[1];g.rotation.y=v[2];g.scale.setScalar(v[3]);g.visible=v[4]}})}catch(e){}
+function choose(g){sel=g;if(bh){scene.remove(bh);bh=null}if(g){bh=new T.BoxHelper(g,0xEE9B26);scene.add(bh)}$('sn').textContent=g?g.name:'Tap an item to select'}
+function setRay(e){const r=ren.domElement.getBoundingClientRect();mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mv,cam)}
+function pick(e){setRay(e);const hs=ray.intersectObjects(Object.values(groups).filter(g=>g.visible),true);if(!hs.length)return null;let o=hs[0].object;while(o&&!groups[o.name])o=o.parent;return o?groups[o.name]:null}
+ren.domElement.addEventListener('pointerdown',e=>{if(!editing)return;const g=pick(e);choose(g);if(g){e.stopImmediatePropagation();ray.ray.intersectPlane(pl0,hit);off.copy(g.position).sub(hit);gdrag=g}},true);
+addEventListener('pointermove',e=>{if(!gdrag)return;setRay(e);if(ray.ray.intersectPlane(pl0,hit)){gdrag.position.x=hit.x+off.x;gdrag.position.z=hit.z+off.z}},true);
+addEventListener('pointerup',()=>{if(gdrag)save();gdrag=null});
+const act=f=>()=>{if(sel){f(sel);save()}};
+$('rl').onclick=act(g=>g.rotation.y+=Math.PI/12);$('rr').onclick=act(g=>g.rotation.y-=Math.PI/12);
+$('sm').onclick=act(g=>g.scale.multiplyScalar(.9));$('sp').onclick=act(g=>g.scale.multiplyScalar(1.1));
+$('dl').onclick=act(g=>{g.visible=false;choose(null)});
+const LK='plan55-default';
+const factory=()=>{Object.keys(groups).forEach(k=>{const g=groups[k],h=home[k];g.position.set(h.x,H,h.z);g.rotation.y=h.r;g.scale.setScalar(h.s);g.visible=true});choose(null);save()};
+$('rs').onclick=()=>{let d=null;try{d=localStorage.getItem(LK)}catch(e){}if(d){try{apply(d);return}catch(e){}}factory()};$('fr').onclick=factory;
+const ser=()=>{const o={};Object.keys(groups).forEach(k=>{const g=groups[k];o[k]=[g.position.x,g.position.z,g.rotation.y,g.scale.x,g.visible]});return JSON.stringify(o)};
+const apply=t=>{const o=JSON.parse(t);Object.keys(o).forEach(k=>{const g=groups[k],v=o[k];if(g){g.position.x=v[0];g.position.z=v[1];g.rotation.y=v[2];g.scale.setScalar(v[3]);g.visible=v[4]}});save();choose(null)};
+$('ex').onclick=()=>{$('xt').value=ser();$('xp').style.display='block'};
+$('xc').onclick=()=>{$('xt').select();try{navigator.clipboard.writeText($('xt').value)}catch(e){}};
+$('xa').onclick=()=>{try{apply($('xt').value);$('xp').style.display='none'}catch(e){alert('Could not read that layout')}};
+$('xx').onclick=()=>{$('xp').style.display='none'};
+$('sd').onclick=async()=>{try{localStorage.setItem(LK,ser());$('sn').textContent='Saved as default (this device)'}catch(e){}try{const db=await claude.use('db');if(db){await db.doc('layout/default').set({layout:ser()});$('sn').textContent='Saved as the default for everyone'}}catch(e){}};
+(async()=>{try{const db=await claude.use('db');if(!db)return;const d=await db.doc('layout/default').get();if(!d.exists)return;const o=JSON.parse(d.data().layout),mine=localStorage.getItem('plan55-layout');Object.keys(o).forEach(k=>{const g=groups[k],v=o[k];if(!g)return;home[k]={x:v[0],z:v[1],r:v[2],s:v[3]};if(!mine){g.position.x=v[0];g.position.z=v[1];g.rotation.y=v[2];g.scale.setScalar(v[3]);g.visible=v[4]}})}catch(e){}})();
+$('be').onclick=()=>{editing=!editing;$('tb').style.display=editing?'flex':'none';$('be').textContent=editing?'Done editing':'Edit layout';if(!editing)choose(null);els.forEach(e=>e.style.visibility=editing?'hidden':'visible')};
+(function t(){requestAnimationFrame(t);if(bh)bh.update()})();
+// camera control
+const tgt=new T.Vector3(0,1.2,0);let az=0,h=6.5,r=10;
+function upd(){const asp=innerWidth/innerHeight,rr=r*(asp<1?1.6:1);cam.position.set(tgt.x+rr*Math.sin(az),h,tgt.z+rr*Math.cos(az));cam.lookAt(tgt)}
+function size(){ren.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();upd()}
+addEventListener('resize',size);size();
+b1.onclick=()=>{az=0;h=1.6;r=9.5;upd()};b2.onclick=()=>{az=0;h=6.5;r=10;upd()};
+let dr=null;ren.domElement.addEventListener('pointerdown',e=>{dr=[e.clientX,e.clientY]});addEventListener('pointerup',()=>dr=null);
+addEventListener('pointermove',e=>{if(!dr)return;az-=(e.clientX-dr[0])*.005;h=Math.max(1.2,Math.min(8,h+(e.clientY-dr[1])*.02));dr=[e.clientX,e.clientY];upd()});
+ren.domElement.addEventListener('wheel',e=>{e.preventDefault();r=Math.max(3,Math.min(24,r*(1+e.deltaY*.001)));upd()},{passive:false});
+$('zi').onclick=()=>{r=Math.max(3,r*.85);upd()};$('zo').onclick=()=>{r=Math.min(24,r*1.18);upd()};
+const pp=new Map();let pd=0;
+addEventListener('pointerdown',e=>{pp.set(e.pointerId,[e.clientX,e.clientY]);if(pp.size===2){const[a,b]=[...pp.values()];pd=Math.hypot(a[0]-b[0],a[1]-b[1])}},true);
+addEventListener('pointermove',e=>{if(!pp.has(e.pointerId))return;pp.set(e.pointerId,[e.clientX,e.clientY]);if(pp.size===2){const[a,b]=[...pp.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pd&&d){r=Math.max(3,Math.min(24,r*pd/d));upd()}pd=d;dr=null;e.stopImmediatePropagation()}},true);
+const pe=e=>{pp.delete(e.pointerId);pd=0};addEventListener('pointerup',pe,true);addEventListener('pointercancel',pe,true);
+const A=[];
+const els=A.map(a=>{const e=document.createElement('div');e.className=a[0].length>2?'tag':'pin';e.textContent=a[0];document.body.appendChild(e);return e});
+const vv=new T.Vector3();
+(function loop(){requestAnimationFrame(loop);ren.render(scene,cam);els.forEach((e,i)=>{A[i][1].getWorldPosition(vv);vv.project(cam);e.style.display=(vv.z>1||!car.parent.visible)?'none':'block';e.style.left=(vv.x*.5+.5)*innerWidth+'px';e.style.top=(-vv.y*.5+.5)*innerHeight+'px'})})();
+
+// real-world measurements + 30 sqm box
+const INFO={
+'Overhead frame':{t:'Overhead canopy',s:'≈ 5.3 × 5.3 m open frame, 0.5 m deep fascia, underside at ≈ 2.9 m',d:['Open rounded-corner frame in graphite-brown, no roof; 0.2 m wide fascia beams with a warm LED line underneath','Four slim corner posts 0.12 × 0.12 m, inset from the frame edge','70mai / A900 Series fascia logo on all four sides']},
+'Driving cabin':{t:'01 · Driving cabin',s:'1.6 W × 1.7 D m (plan 1600 × 1700)',d:['Cream body with graphite trim and an orange base line; dashboard, steering wheel, centre console, two seats','Windshield with a dash cam at the top; no roof','Windshield faces the back of the booth; entry is from the open sides']},
+'Education counter':{t:'02 · Education',s:'1.5 W × 0.65 D × 1.0 H m (plan 1500 × 650), rounded ends',d:['Walnut-brown rounded counter with a cream top and blue LED base','Landscape screen with the two education messages','Two flyers in clear acrylic holders (one per education message) plus a stack of loose flyers','One dash cam on the counter']},
+'Media island':{t:'03 · Media island',s:'1.2 W × 1.4 D m platform (plan 1200 × 1400), wall unit 2.4 m tall (assumed)',d:['Landscape screen ≈ 0.94 × 0.53 m with a 4-camera split view, facing the main entrance','Neon 4K+4K sign and a wall-mounted dash cam above the screen','Perforated champagne side column 0.18 m wide with a backlit vertical 4K+4K','Brown base cabinet 0.97 W × 0.5 D with a display ledge, tethered demo dash cam and scan & shop QR','Rear brand panel: 70mai logo and tagline, facing the cabin side']},
+'TV stand':{t:'TV stand (proposed)',s:'≈ 1.0 W × 1.6 H m, base 0.6 × 0.3 m (43″ screen assumed)',d:['Floor stand with two poles, placed in the empty pocket behind the media island','About 1.6 m behind the island, with ≈ 0.35 m clear to the cabin and the education counter on either side','Screen faces the back of the booth']},
+'Mascot standee':{t:'04 · Mascot standee',s:'0.8 W × 1.28 H m cut-out on a weighted base',d:['Replaces the rest seat: photo-op standee of the brand mascot holding a trophy','Drawn from the reference photo; swap in the real artwork','Turned 45° to face the entrance corner']},
+'A900 table':{t:'05 · A900',s:'1.4 W × 0.7 D × 0.96 H m (plan 1400 × 700)',d:['Rounded brown desk with a cream top and the white 70mai logo on the front','4 tethered A900 units, each on a stepped plinth with a gold step and gold LED lip (the star of the booth), spec plate and arched header','2.1 m clear entry between 05 and 06']},
+'Flagship dash cams table':{t:'06 · Other flagship dash cams',s:'1.4 W × 0.7 D × 0.96 H m (plan 1400 × 700)',d:['Rounded brown desk with a cream top and gold trim','4 tethered other flagship dash cams (FLAGSHIP 1–4, placeholder names) on stepped black plinths with arched headers']},
+'Standard dash cams table':{t:'07 · Other standard dash cams',s:'0.6 W × 1.8 L × 0.96 H m (plan 600 × 1800)',d:['Rounded brown desk with a cream top, 4 tethered standard dash cams (STANDARD 1–4, placeholder names) on stepped plinths with arched headers','1.25 m fixture clearance to the media island']}
+};
+let mOn=true,lastKey=null;const solids=[];
+scene.traverse(o=>{const g=o.geometry&&o.geometry.parameters;if(g&&g.radiusTop===3.1&&g.height===H)o.userData.info='Raised deck';if(o.userData&&o.userData.info)solids.push(o)});
+function showInfo(k){if(!mOn)return;lastKey=k;$('mp').style.display='block';const i=k&&INFO[k];if(!i){$('mt').textContent='Measurements';$('ms').textContent='Tap an object to see its real-world size.';$('md').innerHTML='';return}$('mt').textContent=i.t;$('ms').textContent=i.s;$('md').innerHTML=i.d.map(x=>'<li>'+x+'</li>').join('')}
+const hideP=()=>{$('mp').style.display='none'};
+const _ch=choose;choose=function(g){_ch(g);if(editing&&g)showInfo(g.name)};
+function pickAny(e){setRay(e);const hs=ray.intersectObjects(Object.values(groups).filter(g=>g.visible).concat(solids),true);if(!hs.length)return null;let o=hs[0].object;while(o){if(groups[o.name]===o)return{key:o.name,g:o};if(o.userData&&o.userData.info)return{key:o.userData.info,g:null};o=o.parent}return null}
+let dn=null;ren.domElement.addEventListener('pointerdown',e=>{dn=[e.clientX,e.clientY]});
+addEventListener('pointerup',e=>{if(!dn)return;const m=Math.hypot(e.clientX-dn[0],e.clientY-dn[1]);dn=null;if(editing||!mOn||e.target!==ren.domElement||m>6)return;const r=pickAny(e);if(r){choose(r.g);showInfo(r.key)}else{choose(null);hideP()}});
+$('bm').onclick=()=>{mOn=!mOn;$('bm').classList.toggle('on',mOn);if(mOn)showInfo(lastKey);else{hideP();choose(null)}};
+$('mx').onclick=()=>{mOn=false;$('bm').classList.remove('on');hideP();choose(null)};
+const sqObjs=[];{const sd=5.5,hf=sd/2,rm=new T.MeshBasicMaterial({color:0xe11d1d,depthTest:false,transparent:true,opacity:.9});
+[[sd+.06,.06,0,hf],[sd+.06,.06,0,-hf],[.06,sd+.06,hf,0],[.06,sd+.06,-hf,0]].forEach(a=>{const m=new T.Mesh(new T.PlaneGeometry(a[0],a[1]),rm);m.rotation.x=-Math.PI/2;m.position.set(a[2],.02,a[3]);m.renderOrder=10;scene.add(m);sqObjs.push(m)});
+const lt=tex(640,80,(g,w,h)=>{g.fillStyle='rgba(255,255,255,.92)';g.fillRect(0,0,w,h);g.fillStyle='#c01010';g.textAlign='center';g.font='bold 40px Arial';g.fillText('Plot 5.5 × 5.5 m (30.25 sqm)',w/2,56)});
+sqObjs.push(plane(2.6,.325,lt,0,.02,hf+.4,0,-Math.PI/2))}
+$('bq').onclick=()=>{const v=!sqObjs[0].visible;sqObjs.forEach(o=>o.visible=v);$('bq').classList.toggle('on',v)};
+
+</script></body></html>
